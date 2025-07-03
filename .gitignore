@@ -1,0 +1,5 @@
+# Don’t commit local config
+config.json
+
+# Don’t commit Google credentials folder
+credentials/
