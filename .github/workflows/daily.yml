@@ -1,7 +1,7 @@
 name: Daily Sentiment Update
 
 on:
-  workflow_dispatch:    # allows you to click “Run workflow” manually
+  workflow_dispatch:
   schedule:
     - cron: '0 14 * * *'
     - cron: '0 15 * * *'
@@ -11,15 +11,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.12'
 
-      # Generate config.json from your Secrets
       - name: Write config.json
         run: |
           cat <<EOF > config.json
@@ -37,11 +34,12 @@ jobs:
           }
           EOF
 
-      # Create the credentials folder and inject your service‐account JSON
       - name: Write Google creds
+        env:
+          GCREDS_JSON: "${{ secrets.GCREDS_JSON }}"
         run: |
           mkdir -p credentials
-          echo "${{ secrets.GCREDS_JSON }}" > credentials/gsheets-service.json
+          printf "%s" "$GCREDS_JSON" > credentials/gsheets-service.json
 
       - name: Install dependencies
         run: |
