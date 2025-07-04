@@ -2,6 +2,7 @@ name: Daily Sentiment Update
 
 # Runs at 9:00 AM America/Mexico_City (14:00 & 15:00 UTC to cover DST)
 on:
+  workflow_dispatch:
   schedule:
     - cron: '0 14 * * *'
     - cron: '0 15 * * *'
