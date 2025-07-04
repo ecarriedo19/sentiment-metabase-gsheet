@@ -6,6 +6,11 @@ warnings.filterwarnings(
     category=DeprecationWarning,
 )
 
+# ─── DOWNLOAD VADER LEXICON ───
+import nltk
+nltk.download('vader_lexicon', quiet=True)
+# ───────────────────────────────
+
 import json
 import sys
 from pathlib import Path
@@ -40,16 +45,8 @@ def fetch_metabase_df(cfg, token, start_date, end_date):
     card_id = cfg["metabase_question_id"]
     headers = {"X-Metabase-Session": token}
     params = [
-        {
-            "type": "date",
-            "target": ["variable", ["template-tag", "start_date"]],
-            "value": start_date,
-        },
-        {
-            "type": "date",
-            "target": ["variable", ["template-tag", "end_date"]],
-            "value": end_date,
-        },
+        {"type": "date", "target": ["variable", ["template-tag", "start_date"]], "value": start_date},
+        {"type": "date", "target": ["variable", ["template-tag", "end_date"]],   "value": end_date},
     ]
     resp = requests.post(
         f"{url}/api/card/{card_id}/query/json",
@@ -96,13 +93,11 @@ def update_sheet(cfg, df, pivots):
     client = gspread.authorize(creds)
     ss = client.open_by_key(cfg["google_sheets"]["spreadsheet_id"])
 
-    # Write main sheet
     main_ws = ss.sheet1
     main_ws.clear()
     all_values = [df.columns.tolist()] + df.values.tolist()
     main_ws.update(values=all_values, range_name="A1")
 
-    # Write each pivot
     for title, pivot in pivots.items():
         try:
             ws = ss.worksheet(title)
@@ -145,8 +140,6 @@ def main(start_date, end_date):
     print(f"✅ Workflow run complete: {len(df)} rows processed from {start_date} to {end_date}")
 
 if __name__ == "__main__":
-    # If you pass dates manually, it’ll use those.
-    # Otherwise it auto‐computes the last 7 days.
     if len(sys.argv) == 3:
         sd, ed = sys.argv[1], sys.argv[2]
     else:
