@@ -1,8 +1,7 @@
 name: Daily Sentiment Update
 
-# Runs at 9:00 AM America/Mexico_City (14:00 & 15:00 UTC to cover DST)
 on:
-  workflow_dispatch:
+  workflow_dispatch:    # allows you to click “Run workflow” manually
   schedule:
     - cron: '0 14 * * *'
     - cron: '0 15 * * *'
@@ -19,6 +18,30 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
+
+      # Generate config.json from your Secrets
+      - name: Write config.json
+        run: |
+          cat <<EOF > config.json
+          {
+            "metabase": {
+              "url": "${{ secrets.METABASE_URL }}",
+              "username": "${{ secrets.METABASE_USER }}",
+              "password": "${{ secrets.METABASE_PASS }}"
+            },
+            "metabase_question_id": 3231,
+            "google_sheets": {
+              "spreadsheet_id": "${{ secrets.SHEET_ID }}",
+              "credentials_path": "credentials/gsheets-service.json"
+            }
+          }
+          EOF
+
+      # Create the credentials folder and inject your service‐account JSON
+      - name: Write Google creds
+        run: |
+          mkdir -p credentials
+          echo "${{ secrets.GCREDS_JSON }}" > credentials/gsheets-service.json
 
       - name: Install dependencies
         run: |
